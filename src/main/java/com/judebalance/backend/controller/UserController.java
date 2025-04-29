@@ -94,4 +94,21 @@ public class UserController {
 
         return ResponseEntity.ok(new CommonResponse("프로필 정보가 저장되었습니다."));
     }
+
+    @GetMapping("/me")
+public ResponseEntity<UserProfileResponse> getMyProfile(Authentication authentication) {
+    String username = authentication.getName();
+    User user = userRepository.findByUsername(username)
+        .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
+
+    return ResponseEntity.ok(
+        new UserProfileResponse(
+            user.getId(),
+            user.getUsername(),
+            user.getEmail(),
+            user.getIsProfileSetupCompleted() // ✅ 추가
+        )
+    );
+}
+
 }
