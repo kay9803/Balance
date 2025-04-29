@@ -48,4 +48,8 @@ public class User {
 
     @Column(nullable = false)
     private String fitnessLevel;  // 운동 수준 (초보/중급/고급)
+
+    @Column(nullable = false)
+    private Boolean isProfileSetupCompleted = false;
+
 }
