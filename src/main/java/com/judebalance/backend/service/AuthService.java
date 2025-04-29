@@ -21,29 +21,29 @@ import java.util.List;
 public class AuthService {
 
     private final UserRepository userRepository;
-    private final PasswordEncoder passwordEncoder; // 비밀번호 암호화
-    private final JwtUtil jwtUtil;                  // JWT 유틸
+    private final PasswordEncoder passwordEncoder; // 비밀번호 암호화 도구
+    private final JwtUtil jwtUtil;                  // JWT 토큰 발급 유틸
 
     /**
      * 1) 로그인 처리
      */
     public LoginResponse login(LoginRequest request) {
-        // 사용자 조회
+        // 1-1) 사용자 조회
         User user = userRepository.findByUsername(request.getUsername())
             .orElseThrow(() -> new RuntimeException("존재하지 않는 사용자입니다."));
 
-        // 비밀번호 검증
+        // 1-2) 비밀번호 검증
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
             throw new RuntimeException("비밀번호가 일치하지 않습니다.");
         }
 
-        // JWT 토큰 발급
+        // 1-3) JWT 토큰 발급
         String token = jwtUtil.generateToken(
             user.getUsername(),
-            List.of("ROLE_USER")
+            List.of("ROLE_USER") // 사용자 권한
         );
 
-        // 발급된 토큰과 username 반환
+        // 1-4) 로그인 성공 응답
         return new LoginResponse(token, user.getUsername());
     }
 
@@ -51,24 +51,40 @@ public class AuthService {
      * 2) 회원가입 처리
      */
     public RegisterResponse signup(RegisterRequest req) {
-        // 중복체크
+        // 2-1) 사용자명 중복 체크
         if (userRepository.findByUsername(req.getUsername()).isPresent()) {
-            throw new RuntimeException("이미 존재하는 사용자입니다.");
+            throw new RuntimeException("이미 존재하는 사용자명입니다.");
         }
 
-        // 비밀번호 암호화
-        String hashed = passwordEncoder.encode(req.getPassword());
+        // 2-2) 이메일 중복 체크
+        if (userRepository.findByEmail(req.getEmail()).isPresent()) {
+            throw new RuntimeException("이미 사용 중인 이메일입니다.");
+        }
 
-        // 사용자 저장 (✨ gender 필드 추가)
-        User saved = userRepository.save(User.builder()
+        // 2-3) 비밀번호 암호화
+        String hashedPassword = passwordEncoder.encode(req.getPassword());
+
+        // 2-4) User 객체 생성 및 저장
+        User savedUser = userRepository.save(User.builder()
             .username(req.getUsername())
-            .password(hashed)
+            .password(hashedPassword)
             .email(req.getEmail())
-            .gender(req.getGender()) // ← 추가된 부분!
+            .gender(req.getGender())
+            .phoneNumber(req.getPhoneNumber())
+            .nickname(req.getNickname())
+            .name(req.getName())
+            .age(req.getAge())
+            .height(req.getHeight())
+            .weight(req.getWeight())
+            .fitnessLevel(req.getFitnessLevel())
             .build()
         );
 
-        // 응답 DTO 반환
-        return new RegisterResponse(saved.getUsername(), saved.getEmail(), "가입 성공");
+        // 2-5) 회원가입 성공 응답 반환
+        return new RegisterResponse(
+            savedUser.getUsername(),
+            savedUser.getEmail(),
+            "회원가입이 성공적으로 완료되었습니다."
+        );
     }
 }

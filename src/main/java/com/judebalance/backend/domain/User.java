@@ -3,10 +3,6 @@ package com.judebalance.backend.domain;
 import jakarta.persistence.*;
 import lombok.*;
 
-/**
- * 사용자 정보를 저장하는 엔티티 클래스.
- * users 테이블과 매핑됨.
- */
 @Entity
 @Getter
 @Setter
@@ -18,7 +14,7 @@ public class User {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;  // 기본 키
+    private Long id;
 
     @Column(nullable = false, unique = true)
     private String username;  // 사용자 ID
@@ -27,11 +23,29 @@ public class User {
     private String password;  // 해시된 비밀번호
 
     @Column(nullable = false, unique = true)
-    private String email;  // 사용자 이메일
+    private String email;     // 사용자 이메일
 
     @Column(nullable = false)
-    private String gender;  // 사용자 성별 ("남자" 또는 "여자")
+    private String gender;    // 성별
 
     @Column(nullable = false)
-    private String phoneNumber;  // 사용자 전화번호
+    private String phoneNumber; // 전화번호
+
+    @Column(nullable = false)
+    private String nickname;  // 닉네임
+
+    @Column(nullable = false)
+    private String name;       // 실제 이름
+
+    @Column(nullable = false)
+    private Integer age;       // 나이
+
+    @Column(nullable = false)
+    private Double height;     // 키 (cm)
+
+    @Column(nullable = false)
+    private Double weight;     // 몸무게 (kg)
+
+    @Column(nullable = false)
+    private String fitnessLevel;  // 운동 수준 (초보/중급/고급)
 }

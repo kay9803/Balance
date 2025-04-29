@@ -5,10 +5,9 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;
 
-/**
- * 사용자 조회를 위한 JPA 리포지토리
- */
 public interface UserRepository extends JpaRepository<User, Long> {
-    Optional<User> findByUsername(String username);
     Optional<User> findByEmail(String email);
+    Optional<User> findByUsername(String username);
+    boolean existsByEmail(String email);     // 이메일 중복 체크
+    boolean existsByUsername(String username); // 사용자명 중복 체크
 }
