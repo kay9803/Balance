@@ -78,6 +78,7 @@ public class AuthService {
             .height(req.getHeight())
             .weight(req.getWeight())
             .fitnessLevel(req.getFitnessLevel())
+            .isProfileSetupCompleted(false)
             .build()
         );
 
