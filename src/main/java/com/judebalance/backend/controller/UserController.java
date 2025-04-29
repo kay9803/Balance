@@ -85,6 +85,7 @@ public ResponseEntity<UserProfileResponse> getMyProfile(Authentication authentic
             user.getUsername(),
             user.getEmail(),
             user.getIsProfileSetupCompleted() // ✅ 추가
+            private final Boolean isProfileSetupCompleted; 
         )
     );
 }
