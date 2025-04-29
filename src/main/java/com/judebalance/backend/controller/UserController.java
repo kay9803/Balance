@@ -1,4 +1,3 @@
-// src/main/java/com/judebalance/backend/controller/UserController.java
 package com.judebalance.backend.controller;
 
 import com.judebalance.backend.domain.User;
@@ -23,9 +22,6 @@ public class UserController {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder; // 비밀번호 암호화용
-
-    
-
 
     /**
      * PUT /api/user/me
@@ -68,26 +64,37 @@ public class UserController {
         user.setWeight(request.getWeight());
         user.setFitnessLevel(request.getFitnessLevel());
 
+        // ✅ 프로필 저장이 완료되면 isProfileSetupCompleted = true 로 변경
+        user.setIsProfileSetupCompleted(true);
+
         userRepository.save(user);
 
         return ResponseEntity.ok(new CommonResponse("프로필 정보가 저장되었습니다."));
     }
 
+    /**
+     * GET /api/user/me
+     * - 현재 로그인한 사용자의 프로필 조회
+     */
     @GetMapping("/me")
-public ResponseEntity<UserProfileResponse> getMyProfile(Authentication authentication) {
-    String username = authentication.getName();
-    User user = userRepository.findByUsername(username)
-        .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
+    public ResponseEntity<UserProfileResponse> getMyProfile(Authentication authentication) {
+        String username = authentication.getName();
+        User user = userRepository.findByUsername(username)
+            .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
 
-    return ResponseEntity.ok(
-        new UserProfileResponse(
-            user.getId(),
-            user.getUsername(),
-            user.getEmail(),
-            user.getIsProfileSetupCompleted() // ✅ 추가
-            private final Boolean isProfileSetupCompleted; 
-        )
-    );
+        return ResponseEntity.ok(
+            new UserProfileResponse(
+                user.getId(),
+                user.getUsername(),
+                user.getEmail(),
+                user.getGender(),
+                user.getAge(),
+                user.getHeight(),
+                user.getWeight(),
+                user.getFitnessLevel(),
+                user.getIsProfileSetupCompleted()
+            )
+        );
+    }
 }
 
-}
