@@ -40,11 +40,19 @@ public class AuthController {
    
 
     // 회원가입 API
+    
     @PostMapping("/signup")
-    public ResponseEntity<RegisterResponse> signup(@RequestBody RegisterRequest req) {
+public ResponseEntity<RegisterResponse> signup(@RequestBody RegisterRequest req) {
+    try {
         RegisterResponse resp = authService.signup(req);
         return ResponseEntity.ok(resp);
+    } catch (RuntimeException e) {
+        return ResponseEntity.badRequest().body(
+            new RegisterResponse(null, null, e.getMessage())
+        );
     }
+}
+
 
     // 비밀번호 재설정 API
     @PostMapping("/reset-password")
