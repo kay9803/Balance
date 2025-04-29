@@ -18,3 +18,11 @@ public class UserProfileResponse {
     private Double weight;
     private String fitnessLevel;
 }
+@Getter
+@AllArgsConstructor
+public class UserProfileResponse {
+    private final Long id;
+    private final String username;
+    private final String email;
+    private final Boolean isProfileSetupCompleted;  // ✅ 추가
+}
