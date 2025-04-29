@@ -1,6 +1,7 @@
 // src/main/java/com/judebalance/backend/config/SecurityConfig.java
 package com.judebalance.backend.config;
 
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import com.judebalance.backend.util.JwtUtil;
 import com.judebalance.backend.config.JwtAuthenticationFilter;
 import org.springframework.context.annotation.Bean;
