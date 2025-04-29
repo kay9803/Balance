@@ -27,7 +27,8 @@ public class SecurityConfig {
     // PasswordEncoder 설정 (현재 개발용 NoOp)
     @Bean
     public PasswordEncoder passwordEncoder() {
-        return NoOpPasswordEncoder.getInstance();
+       //   비밀번호 안전하게 해시 저장함
+        return new BCryptPasswordEncoder();
     }
 
     // 필터 체인 설정
