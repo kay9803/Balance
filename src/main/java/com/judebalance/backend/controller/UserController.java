@@ -24,30 +24,8 @@ public class UserController {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder; // 비밀번호 암호화용
 
-    /**
-     * GET /api/user/me
-     * - 현재 로그인한 사용자의 전체 프로필 조회
-     */
-    @GetMapping("/me")
-    public ResponseEntity<UserProfileResponse> getMyProfile(Authentication authentication) {
-        String username = authentication.getName(); // 현재 로그인한 username 가져오기
-        User user = userRepository.findByUsername(username)
-            .orElseThrow(() -> new RuntimeException("로그인된 사용자를 찾을 수 없습니다."));
+    
 
-        // 사용자 전체 프로필 응답
-        UserProfileResponse profile = new UserProfileResponse(
-            user.getId(),
-            user.getUsername(),
-            user.getEmail(),
-            user.getGender(),
-            user.getAge(),
-            user.getHeight(),
-            user.getWeight(),
-            user.getFitnessLevel()
-        );
-
-        return ResponseEntity.ok(profile);
-    }
 
     /**
      * PUT /api/user/me
