@@ -47,5 +47,5 @@ tasks.named('test') {
 }
 
 bootJar {
-    mainClass.set('com.j.backend.BackendApplication')
+    mainClass.set('com.judebalance.backend.BackendApplication')
 }
