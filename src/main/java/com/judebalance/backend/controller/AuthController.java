@@ -29,11 +29,15 @@ public class AuthController {
     private final PasswordEncoder passwordEncoder;
     private final EmailService emailService;  // ✨ 추가 필요!
 
-    // 로그인 API
+    /**
+    * 로그인 API
+    */
     @PostMapping("/login")
-    public LoginResponse login(@RequestBody LoginRequest request) {
-        return authService.login(request);
-    }
+    public ResponseEntity<LoginResponse> login(@RequestBody LoginRequest request) {
+       LoginResponse response = authService.login(request);
+       return ResponseEntity.ok(response);
+   }
+   
 
     // 회원가입 API
     @PostMapping("/signup")

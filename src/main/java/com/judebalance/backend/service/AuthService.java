@@ -24,28 +24,29 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder; // 비밀번호 암호화 도구
     private final JwtUtil jwtUtil;                  // JWT 토큰 발급 유틸
 
-    /**
-     * 1) 로그인 처리
-     */
+     /**
+    * 로그인 처리
+    */
     public LoginResponse login(LoginRequest request) {
-        // 1-1) 사용자 조회
+       // 1) 사용자 조회
         User user = userRepository.findByUsername(request.getUsername())
-            .orElseThrow(() -> new RuntimeException("존재하지 않는 사용자입니다."));
-
-        // 1-2) 비밀번호 검증
+           .orElseThrow(() -> new RuntimeException("존재하지 않는 사용자입니다."));
+   
+       // 2) 비밀번호 검증
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
-            throw new RuntimeException("비밀번호가 일치하지 않습니다.");
-        }
-
-        // 1-3) JWT 토큰 발급
+           throw new RuntimeException("비밀번호가 일치하지 않습니다.");
+       }
+   
+       // 3) JWT 토큰 발급
         String token = jwtUtil.generateToken(
-            user.getUsername(),
-            List.of("ROLE_USER") // 사용자 권한
-        );
-
-        // 1-4) 로그인 성공 응답
+           user.getUsername(),
+           List.of("ROLE_USER") // 권한 추가 가능
+       );
+   
+       // 4) 로그인 성공 응답 반환
         return new LoginResponse(token, user.getUsername());
     }
+   
 
     /**
      * 2) 회원가입 처리
