@@ -10,6 +10,8 @@ import com.judebalance.backend.request.RegisterRequest;
 import com.judebalance.backend.response.RegisterResponse;
 import lombok.RequiredArgsConstructor;
 import com.judebalance.backend.response.UserSearchResponse; 
+import com.judebalance.backend.service.UserService;
+
 
 import java.util.List;
 
@@ -29,6 +31,7 @@ public class UserController {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder; // 비밀번호 암호화용
     private final AesEncryptUtil aesEncryptUtil;   // AES 복호화용
+    private final UserService userService;
 
     /**
      * GET /api/user/me
