@@ -41,4 +41,16 @@ public class PostController {
         List<PostResponse> posts = postService.getAllPosts();
         return ResponseEntity.ok(posts);
     }
+
+    // ✅ 게시물 삭제
+
+    // src/main/java/com/judebalance/backend/controller/PostController.java
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<String> deletePost(@PathVariable Long id, Authentication authentication) {
+        String username = authentication.getName();
+        postService.deletePost(id, username);
+        return ResponseEntity.ok("게시물이 삭제되었습니다.");
+    }
+
 }

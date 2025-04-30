@@ -71,4 +71,18 @@ public class PostService {
             .collect(Collectors.toList());
     }
 
+    // src/main/java/com/judebalance/backend/service/PostService.java
+
+    public void deletePost(Long postId, String username) {
+        Post post = postRepository.findById(postId)
+            .orElseThrow(() -> new RuntimeException("게시물을 찾을 수 없습니다."));
+
+        if (!post.getUser().getUsername().equals(username)) {
+            throw new RuntimeException("자신이 작성한 게시물만 삭제할 수 있습니다.");
+        }
+
+        postRepository.delete(post);
+    }
+
+
 }
