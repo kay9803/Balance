@@ -1,6 +1,8 @@
 package com.judebalance.backend.repository;
 
 import com.judebalance.backend.domain.Post;
+import com.judebalance.backend.domain.User;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 
@@ -11,4 +13,7 @@ public interface PostRepository extends JpaRepository<Post, Long> {
 
     // 최신순 정렬 (옵션)
     List<Post> findAllByOrderByCreatedAtDesc();
+
+    List<Post> findByUserOrderByCreatedAtDesc(User user);
+
 }

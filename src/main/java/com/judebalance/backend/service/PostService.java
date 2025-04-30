@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -39,18 +40,33 @@ public class PostService {
 
         return postRepository.save(post);
     }
-    public List<PostResponse> getMyPosts(String username) {
-    User user = userRepository.findByUsername(username)
-        .orElseThrow(() -> new RuntimeException("사용자 없음"));
 
-    return postRepository.findByUserId(user.getId()).stream()
-        .map(post -> new PostResponse(
-            post.getId(),
-            post.getContent(),
-            post.getMediaUrl(),
-            post.getCreatedAt().toString()
-        ))
-        .toList();
+    public List<PostResponse> getMyPosts(String username) {
+        User user = userRepository.findByUsername(username)
+        .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
+    
+        return postRepository.findByUserOrderByCreatedAtDesc(user)
+            .stream()
+            .map(post -> new PostResponse(
+                post.getId(),
+                post.getContent(),
+                post.getMediaUrl(),
+                post.getCreatedAt()
+            ))
+            .collect(Collectors.toList());
+    }
+    
+
+    public List<PostResponse> getAllPosts() {
+    return postRepository.findAll(Sort.by(Sort.Direction.DESC, "createdAt"))
+            .stream()
+            .map(post -> new PostResponse(
+                    post.getId(),
+                    post.getContent(),
+                    post.getMediaUrl(),
+                    post.getCreatedAt()
+            ))
+            .collect(Collectors.toList());
     }
 
 }

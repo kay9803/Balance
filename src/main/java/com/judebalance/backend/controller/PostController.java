@@ -18,24 +18,27 @@ public class PostController {
 
     private final PostService postService;
 
-    /**
-     * 게시물 등록 API
-     */
+    // ✅ 게시물 등록
     @PostMapping
     public ResponseEntity<Post> createPost(@RequestBody PostCreateRequest request,
-                                        Authentication authentication) {
+                                           Authentication authentication) {
         String username = authentication.getName();
         Post createdPost = postService.createPost(request, username);
         return ResponseEntity.ok(createdPost);
     }
 
-    /**
-     * 내가 쓴 게시물 리스트 조회 API
-     */
+    // ✅ 내가 쓴 게시물 조회
     @GetMapping("/my")
     public ResponseEntity<List<PostResponse>> getMyPosts(Authentication authentication) {
         String username = authentication.getName();
         List<PostResponse> myPosts = postService.getMyPosts(username);
         return ResponseEntity.ok(myPosts);
+    }
+
+    // ✅ 전체 게시물 조회
+    @GetMapping
+    public ResponseEntity<List<PostResponse>> getAllPosts() {
+        List<PostResponse> posts = postService.getAllPosts();
+        return ResponseEntity.ok(posts);
     }
 }
