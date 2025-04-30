@@ -6,7 +6,8 @@ import com.judebalance.backend.repository.PostRepository;
 import com.judebalance.backend.repository.UserRepository;
 import com.judebalance.backend.request.PostCreateRequest;
 import lombok.RequiredArgsConstructor;
-import main.java.com.judebalance.backend.response.PostResponse;
+import com.judebalance.backend.response.PostResponse;
+
 
 import org.springframework.stereotype.Service;
 
