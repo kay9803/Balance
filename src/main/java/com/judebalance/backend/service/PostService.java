@@ -6,9 +6,12 @@ import com.judebalance.backend.repository.PostRepository;
 import com.judebalance.backend.repository.UserRepository;
 import com.judebalance.backend.request.PostCreateRequest;
 import lombok.RequiredArgsConstructor;
+import main.java.com.judebalance.backend.response.PostResponse;
+
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -35,4 +38,18 @@ public class PostService {
 
         return postRepository.save(post);
     }
+    public List<PostResponse> getMyPosts(String username) {
+    User user = userRepository.findByUsername(username)
+        .orElseThrow(() -> new RuntimeException("사용자 없음"));
+
+    return postRepository.findByUserId(user.getId()).stream()
+        .map(post -> new PostResponse(
+            post.getId(),
+            post.getContent(),
+            post.getMediaUrl(),
+            post.getCreatedAt().toString()
+        ))
+        .toList();
+    }
+
 }
