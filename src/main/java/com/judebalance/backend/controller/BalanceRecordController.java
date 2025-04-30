@@ -33,7 +33,7 @@ public class BalanceRecordController {
 
         BalanceRecord record = BalanceRecord.builder()
             .user(user)
-            .balanceTime(request.getBalanceTime())
+            .duration(request.getBalanceTime())
             .date(LocalDate.now()) // 오늘 날짜로 저장
             .build();
 
