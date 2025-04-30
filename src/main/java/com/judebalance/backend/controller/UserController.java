@@ -118,4 +118,58 @@ public class UserController {
 
         return ResponseEntity.ok(new RegisterResponse("사용 가능", req.getEmail(), "가입 가능 상태입니다."));
     }
+
+    /**
+ * POST /api/user/profile/me
+ * - 프로필 추가 정보 저장 및 설정 완료 처리
+ */
+@PostMapping("/profile/me")
+public ResponseEntity<?> completeUserProfile(
+        @RequestBody RegisterRequest req,
+        Authentication authentication) {
+
+    String username = authentication.getName();
+    User user = userRepository.findByUsername(username)
+        .orElseThrow(() -> new RuntimeException("로그인된 사용자를 찾을 수 없습니다."));
+
+    // 이메일 및 전화번호 암호화
+    String encryptedEmail = aesEncryptUtil.encrypt(req.getEmail());
+    String encryptedPhone = aesEncryptUtil.encrypt(req.getPhoneNumber());
+
+    // 이메일 중복 확인
+    boolean emailExists = userRepository.findByEmail(encryptedEmail).isPresent();
+    if (emailExists && !encryptedEmail.equals(user.getEmail())) {
+        return ResponseEntity.badRequest().body("이미 사용 중인 이메일입니다.");
+    }
+
+    // 전화번호 중복 확인
+    boolean phoneExists = userRepository.findAll().stream()
+        .anyMatch(u -> u.getPhoneNumber() != null &&
+                       u.getPhoneNumber().equals(encryptedPhone) &&
+                       !u.getUsername().equals(username));
+    if (phoneExists) {
+        return ResponseEntity.badRequest().body("이미 사용 중인 전화번호입니다.");
+    }
+
+    // 정보 저장
+    user.setName(req.getName());
+    user.setNickname(req.getNickname());
+    user.setEmail(encryptedEmail);
+    user.setPhoneNumber(encryptedPhone);
+    user.setGender(req.getGender());
+    user.setAge(req.getAge());
+    user.setHeight(req.getHeight());
+    user.setWeight(req.getWeight());
+    user.setFitnessLevel(req.getFitnessLevel());
+    user.setIsProfileSetupCompleted(true);  // ✅ 핵심!
+
+    userRepository.save(user);
+
+    return ResponseEntity.ok(new RegisterResponse(
+        user.getUsername(),
+        aesEncryptUtil.decrypt(user.getEmail()),
+        "프로필 정보가 성공적으로 저장되었습니다."
+    ));
+}
+
 }
