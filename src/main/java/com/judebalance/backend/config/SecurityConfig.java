@@ -38,16 +38,16 @@ public class SecurityConfig {
         JwtAuthenticationFilter jwtFilter = new JwtAuthenticationFilter(jwtUtil);
 
         http
-            .csrf(csrf -> csrf.disable())
-            .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/api/auth/**").permitAll()   // ✅ 인증 없이 허용
-                .requestMatchers("/api/user/me").authenticated() // ✅ 인증 필요
-                .requestMatchers("/api/user/**","/api/user/signup").authenticated() 
-                .anyRequest().permitAll()                      // ✅ 나머지 허용
-                
-            )
-            .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
-            .httpBasic(Customizer.withDefaults());
+        .csrf(csrf -> csrf.disable())
+        .authorizeHttpRequests(auth -> auth
+            .requestMatchers("/api/auth/**").permitAll()
+            .requestMatchers("/api/user/signup").permitAll()           // ✅ 분리해서 허용
+            .requestMatchers("/api/user/me").authenticated()
+            .requestMatchers("/api/user/**").authenticated()
+            .anyRequest().permitAll()
+        )
+        .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
+        .httpBasic(Customizer.withDefaults());
 
         return http.build();
     }
