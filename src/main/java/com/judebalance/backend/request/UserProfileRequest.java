@@ -14,4 +14,5 @@ public class UserProfileRequest {
     private Double height;       // 키 (cm)
     private Double weight;       // 몸무게 (kg)
     private String fitnessLevel; // 운동 수준 (초보/중급/고급)
+    private String phoneNumber;
 }

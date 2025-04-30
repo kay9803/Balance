@@ -18,5 +18,6 @@ public class UserProfileResponse {
     private final Double weight;              // 몸무게
     private final String fitnessLevel;        // 운동 수준
     private final Boolean isProfileSetupCompleted;  // 프로필 설정 완료 여부
+    private String phoneNumber;
 }
 
