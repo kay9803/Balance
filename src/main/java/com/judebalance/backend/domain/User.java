@@ -49,7 +49,7 @@ public class User {
     @Column(nullable = false)
     private String fitnessLevel;  // 운동 수준 (초보/중급/고급)
 
+    @Builder.Default
     @Column(nullable = false)
-    private Boolean isProfileSetupCompleted = false;
-
+    private Boolean isProfileSetupCompleted = false;  // 프로필 설정 완료 여부
 }

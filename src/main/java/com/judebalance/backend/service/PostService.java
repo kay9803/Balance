@@ -98,6 +98,11 @@ public class PostService {
 
     // 5. 저장 및 반환
         return postRepository.save(post);
+
+    // 6. 게시물 삭제
+        public void deletePost(Long id, String username) {
+        }
+        
     }
 
 
