@@ -4,6 +4,8 @@ import com.judebalance.backend.domain.User;
 import com.judebalance.backend.repository.UserRepository;
 import com.judebalance.backend.request.UserProfileRequest;
 import lombok.RequiredArgsConstructor;
+import com.judebalance.backend.response.UserSearchResponse; 
+
 
 import java.util.List;
 import java.util.stream.Collectors;

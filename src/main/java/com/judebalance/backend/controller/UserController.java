@@ -9,6 +9,7 @@ import com.judebalance.backend.util.AesEncryptUtil;
 import com.judebalance.backend.request.RegisterRequest;
 import com.judebalance.backend.response.RegisterResponse;
 import lombok.RequiredArgsConstructor;
+import com.judebalance.backend.response.UserSearchResponse; 
 
 import java.util.List;
 
