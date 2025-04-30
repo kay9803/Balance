@@ -9,6 +9,9 @@ import com.judebalance.backend.util.AesEncryptUtil;
 import com.judebalance.backend.request.RegisterRequest;
 import com.judebalance.backend.response.RegisterResponse;
 import lombok.RequiredArgsConstructor;
+
+import java.util.List;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -170,6 +173,16 @@ public ResponseEntity<?> completeUserProfile(
         aesEncryptUtil.decrypt(user.getEmail()),
         "프로필 정보가 성공적으로 저장되었습니다."
     ));
-}
+    }
 
+    // UserController.java
+@GetMapping("/search")
+public ResponseEntity<List<UserSearchResponse>> searchUsers(
+        @RequestParam String keyword,
+        Authentication authentication) {
+
+    String currentUsername = authentication.getName(); // 현재 로그인한 사용자 제외
+    List<UserSearchResponse> result = userService.searchByNickname(keyword, currentUsername);
+    return ResponseEntity.ok(result);
+    }
 }

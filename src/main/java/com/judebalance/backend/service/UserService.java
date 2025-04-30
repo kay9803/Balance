@@ -4,6 +4,10 @@ import com.judebalance.backend.domain.User;
 import com.judebalance.backend.repository.UserRepository;
 import com.judebalance.backend.request.UserProfileRequest;
 import lombok.RequiredArgsConstructor;
+
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.springframework.stereotype.Service;
 
 /**
@@ -28,4 +32,18 @@ public class UserService {
 
         userRepository.save(user);
     }
+        // UserService.java
+public List<UserSearchResponse> searchByNickname(String keyword, String currentUsername) {
+    List<User> matched = userRepository.findByNicknameContainingIgnoreCase(keyword);
+    return matched.stream()
+            .filter(user -> !user.getUsername().equals(currentUsername)) // 자기자신 제외
+            .map(user -> new UserSearchResponse(
+                    user.getId(),
+                    user.getNickname(),
+                    user.getAge(),
+                    "https://your-s3-or-default-image-url.com/default.png" // 예시
+            ))
+            .collect(Collectors.toList());
+    }
+
 }
