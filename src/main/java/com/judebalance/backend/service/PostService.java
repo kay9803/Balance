@@ -29,7 +29,7 @@ public class PostService {
         Post post = Post.builder()
                 .user(user)
                 .content(request.getContent())
-                .imageUrl(request.getImageUrl())
+                .mediaUrl(request.getImageUrl())
                 .createdAt(LocalDateTime.now())
                 .build();
 
