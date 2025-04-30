@@ -13,7 +13,7 @@ spring:
 
   jwt:
     secret: AQC7KfGZ2L8q3P9sV4yT8uX0aB5dE6gH7jK9mN2pQ=
-    expiration-ms: 3600000
+    expiration-ms: 86400000  
 
   datasource:
     url: jdbc:postgresql://dpg-d07hffc9c44c739vphvg-a.singapore-postgres.render.com:5432/judebalance  # ✅ Render 주소로 변경
