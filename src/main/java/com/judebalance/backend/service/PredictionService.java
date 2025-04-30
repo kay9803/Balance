@@ -32,7 +32,7 @@ public class PredictionService {
         HttpEntity<Map<String, Object>> entity = new HttpEntity<>(body, headers);
 
         // 🔗 FastAPI ngrok 주소
-        String fastApiUrl = "https://<your-ngrok-url>.ngrok-free.app/predict"; // 🔁 실제 ngrok 주소로 바꿔줘
+        String fastApiUrl = "https://6e97-34-75-33-213.ngrok-free.app/predict"; // 🔁 실제 ngrok 주소로 바꿔줘
 
         ResponseEntity<String> response = restTemplate.postForEntity(fastApiUrl, entity, String.class);
 
