@@ -40,12 +40,13 @@ public class SecurityConfig {
         http
         .csrf(csrf -> csrf.disable())
         .authorizeHttpRequests(auth -> auth
-            .requestMatchers("/api/auth/**").permitAll()
-            .requestMatchers("/api/user/signup").permitAll()           // ✅ 분리해서 허용
-            .requestMatchers("/api/user/me").authenticated()
-            .requestMatchers("/api/user/**").authenticated()
-            .anyRequest().permitAll()
-        )
+        .requestMatchers("/api/auth/**").permitAll()
+        .requestMatchers("/api/user/signup").permitAll()   // ✅ 여기가 핵심!
+        .requestMatchers("/api/user/me").authenticated()
+        .requestMatchers("/api/user/**").authenticated()
+        .anyRequest().permitAll()
+    )
+    
         .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
         .httpBasic(Customizer.withDefaults());
 
