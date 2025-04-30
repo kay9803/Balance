@@ -23,7 +23,7 @@ public class PostController {
      */
     @PostMapping
     public ResponseEntity<Post> createPost(@RequestBody PostCreateRequest request,
-                                           Authentication authentication) {
+                                        Authentication authentication) {
         String username = authentication.getName();
         Post createdPost = postService.createPost(request, username);
         return ResponseEntity.ok(createdPost);
