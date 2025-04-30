@@ -42,7 +42,7 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/api/auth/**").permitAll()   // ✅ 인증 없이 허용
                 .requestMatchers("/api/user/me").authenticated() // ✅ 인증 필요
-                .requestMatchers("/api/user/**").authenticated() 
+                .requestMatchers("/api/user/**","/api/user/signup").authenticated() 
                 .anyRequest().permitAll()                      // ✅ 나머지 허용
                 
             )

@@ -1,11 +1,13 @@
+// src/main/java/com/judebalance/backend/controller/UserController.java
 package com.judebalance.backend.controller;
 
 import com.judebalance.backend.domain.User;
 import com.judebalance.backend.repository.UserRepository;
 import com.judebalance.backend.response.UserProfileResponse;
 import com.judebalance.backend.request.UserUpdateRequest;
-import com.judebalance.backend.request.UserProfileRequest;
-import com.judebalance.backend.response.CommonResponse;
+import com.judebalance.backend.util.AesEncryptUtil;
+import com.judebalance.backend.request.RegisterRequest;
+import com.judebalance.backend.response.RegisterResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -22,20 +24,64 @@ public class UserController {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder; // 비밀번호 암호화용
+    private final AesEncryptUtil aesEncryptUtil;   // AES 복호화용
+
+    /**
+     * GET /api/user/me
+     * - 현재 로그인한 사용자의 전체 프로필 조회
+     */
+    @GetMapping("/me")
+    public ResponseEntity<UserProfileResponse> getMyProfile(Authentication authentication) {
+        String username = authentication.getName(); // 현재 로그인한 username 가져오기
+        User user = userRepository.findByUsername(username)
+            .orElseThrow(() -> new RuntimeException("로그인된 사용자를 찾을 수 없습니다."));
+
+        // 복호화된 정보로 프로필 반환
+        UserProfileResponse profile = new UserProfileResponse(
+            user.getId(),
+            user.getUsername(),
+            aesEncryptUtil.decrypt(user.getEmail()),
+            user.getGender(),
+            user.getAge(),
+            user.getHeight(),
+            user.getWeight(),
+            user.getFitnessLevel(),
+            user.getIsProfileSetupCompleted(),
+            aesEncryptUtil.decrypt(user.getPhoneNumber())
+        );
+
+        return ResponseEntity.ok(profile);
+    }
 
     /**
      * PUT /api/user/me
      * - 현재 로그인한 사용자의 이메일, 비밀번호 수정
      */
     @PutMapping("/me")
-    public ResponseEntity<CommonResponse> updateUser(@RequestBody UserUpdateRequest updateRequest, Authentication authentication) {
-        String username = authentication.getName();
+    public ResponseEntity<?> updateUser(@RequestBody UserUpdateRequest updateRequest, Authentication authentication) {
+        String username = authentication.getName(); // 현재 로그인한 username 가져오기
         User user = userRepository.findByUsername(username)
             .orElseThrow(() -> new RuntimeException("User not found"));
 
-        // 이메일 수정
+        // 이메일 수정 (암호화 적용)
         if (updateRequest.getEmail() != null && !updateRequest.getEmail().isEmpty()) {
-            user.setEmail(updateRequest.getEmail());
+            String encryptedEmail = aesEncryptUtil.encrypt(updateRequest.getEmail());
+            boolean emailExists = userRepository.findByEmail(encryptedEmail).isPresent();
+            if (emailExists && !encryptedEmail.equals(user.getEmail())) {
+                return ResponseEntity.badRequest().body("이미 사용 중인 이메일입니다.");
+            }
+            user.setEmail(encryptedEmail);
+        }
+
+        // 전화번호 수정 (암호화 적용)
+        if (updateRequest.getPhoneNumber() != null && !updateRequest.getPhoneNumber().isEmpty()) {
+            String encryptedPhone = aesEncryptUtil.encrypt(updateRequest.getPhoneNumber());
+            boolean phoneExists = userRepository.findAll().stream()
+                .anyMatch(u -> u.getPhoneNumber() != null && u.getPhoneNumber().equals(encryptedPhone) && !u.getUsername().equals(username));
+            if (phoneExists) {
+                return ResponseEntity.badRequest().body("이미 사용 중인 전화번호입니다.");
+            }
+            user.setPhoneNumber(encryptedPhone);
         }
 
         // 비밀번호 수정 (암호화 후 저장)
@@ -45,56 +91,31 @@ public class UserController {
 
         userRepository.save(user); // 수정사항 저장
 
-        return ResponseEntity.ok(new CommonResponse("회원정보가 수정되었습니다."));
+        return ResponseEntity.ok("User updated successfully");
     }
 
     /**
-     * POST /api/user/profile
-     * - 현재 로그인한 사용자의 성별, 나이, 키, 몸무게, 운동 수준 저장
+     * POST /api/user/signup
+     * - 회원가입 시 암호화 기반 중복 검사
      */
-    @PostMapping("/profile")
-    public ResponseEntity<CommonResponse> updateProfile(@RequestBody UserProfileRequest request, Authentication authentication) {
-        String username = authentication.getName();
-        User user = userRepository.findByUsername(username)
-            .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
+    @PostMapping("/signup")
+    public ResponseEntity<RegisterResponse> signup(@RequestBody RegisterRequest req) {
+        String encryptedEmail = aesEncryptUtil.encrypt(req.getEmail());
+        String encryptedPhone = aesEncryptUtil.encrypt(req.getPhoneNumber());
 
-        user.setGender(request.getGender());
-        user.setAge(request.getAge());
-        user.setHeight(request.getHeight());
-        user.setWeight(request.getWeight());
-        user.setFitnessLevel(request.getFitnessLevel());
+        // 중복 체크
+        if (userRepository.findByUsername(req.getUsername()).isPresent()) {
+            return ResponseEntity.badRequest().body(new RegisterResponse(null, null, "이미 존재하는 사용자명입니다."));
+        }
+        if (userRepository.findByEmail(encryptedEmail).isPresent()) {
+            return ResponseEntity.badRequest().body(new RegisterResponse(null, null, "이미 사용 중인 이메일입니다."));
+        }
+        boolean phoneExists = userRepository.findAll().stream()
+            .anyMatch(u -> u.getPhoneNumber() != null && u.getPhoneNumber().equals(encryptedPhone));
+        if (phoneExists) {
+            return ResponseEntity.badRequest().body(new RegisterResponse(null, null, "이미 사용 중인 전화번호입니다."));
+        }
 
-        // ✅ 프로필 저장이 완료되면 isProfileSetupCompleted = true 로 변경
-        user.setIsProfileSetupCompleted(true);
-
-        userRepository.save(user);
-
-        return ResponseEntity.ok(new CommonResponse("프로필 정보가 저장되었습니다."));
-    }
-
-    /**
-     * GET /api/user/me
-     * - 현재 로그인한 사용자의 프로필 조회
-     */
-    @GetMapping("/me")
-    public ResponseEntity<UserProfileResponse> getMyProfile(Authentication authentication) {
-        String username = authentication.getName();
-        User user = userRepository.findByUsername(username)
-            .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
-
-        return ResponseEntity.ok(
-            new UserProfileResponse(
-                user.getId(),
-                user.getUsername(),
-                user.getEmail(),
-                user.getGender(),
-                user.getAge(),
-                user.getHeight(),
-                user.getWeight(),
-                user.getFitnessLevel(),
-                user.getIsProfileSetupCompleted()
-            )
-        );
+        return ResponseEntity.ok(new RegisterResponse("사용 가능", req.getEmail(), "가입 가능 상태입니다."));
     }
 }
-
