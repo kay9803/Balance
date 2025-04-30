@@ -5,6 +5,8 @@ import com.judebalance.backend.domain.User;
 import com.judebalance.backend.repository.PostRepository;
 import com.judebalance.backend.repository.UserRepository;
 import com.judebalance.backend.request.PostCreateRequest;
+import com.judebalance.backend.request.PostUpdateRequest;
+
 import lombok.RequiredArgsConstructor;
 import com.judebalance.backend.response.PostResponse;
 
@@ -71,17 +73,31 @@ public class PostService {
             .collect(Collectors.toList());
     }
 
-    // src/main/java/com/judebalance/backend/service/PostService.java
-
-    public void deletePost(Long postId, String username) {
+/**
+ * 게시물 수정
+ */
+    public Post updatePost(Long postId, PostUpdateRequest request, String username) {
+    // 1. 게시물 조회
         Post post = postRepository.findById(postId)
             .orElseThrow(() -> new RuntimeException("게시물을 찾을 수 없습니다."));
 
+    // 2. 권한 확인 (작성자 본인만 수정 가능)
         if (!post.getUser().getUsername().equals(username)) {
-            throw new RuntimeException("자신이 작성한 게시물만 삭제할 수 있습니다.");
+             throw new RuntimeException("수정 권한이 없습니다.");
         }
 
-        postRepository.delete(post);
+    // 3. 내용 수정
+         if (request.getContent() != null) {
+             post.setContent(request.getContent());
+        }
+
+    // 4. 미디어 URL 수정
+         if (request.getMediaUrl() != null) {
+            post.setMediaUrl(request.getMediaUrl());
+        }
+
+    // 5. 저장 및 반환
+        return postRepository.save(post);
     }
 
 

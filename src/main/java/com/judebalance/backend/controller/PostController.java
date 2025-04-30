@@ -1,3 +1,4 @@
+// src/main/java/com/judebalance/backend/controller/PostController.java
 package com.judebalance.backend.controller;
 
 import com.judebalance.backend.domain.Post;
@@ -12,6 +13,9 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+/**
+ * 게시물 등록, 조회, 수정, 삭제 컨트롤러
+ */
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/posts")
@@ -44,34 +48,11 @@ public class PostController {
     }
 
     // ✅ 게시물 삭제
-
-    // src/main/java/com/judebalance/backend/controller/PostController.java
-
     @DeleteMapping("/{id}")
     public ResponseEntity<String> deletePost(@PathVariable Long id, Authentication authentication) {
         String username = authentication.getName();
         postService.deletePost(id, username);
         return ResponseEntity.ok("게시물이 삭제되었습니다.");
-    }
-
-    // ✅ 게시물 수정
-    public Post updatePost(Long postId, PostUpdateRequest request, String username) {
-        Post post = postRepository.findById(postId)
-            .orElseThrow(() -> new RuntimeException("게시물을 찾을 수 없습니다."));
-
-        if (!post.getUser().getUsername().equals(username)) {
-            throw new RuntimeException("수정 권한이 없습니다.");
-        }
-
-        if (request.getContent() != null) {
-            post.setContent(request.getContent());
-        }
-
-        if (request.getMediaUrl() != null) {
-            post.setMediaUrl(request.getMediaUrl());
-        }
-
-        return postRepository.save(post);
     }
 
     // ✅ 게시물 수정
@@ -83,5 +64,4 @@ public class PostController {
         Post updated = postService.updatePost(id, request, username);
         return ResponseEntity.ok(updated);
     }
-
 }
