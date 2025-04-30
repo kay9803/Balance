@@ -7,6 +7,7 @@ package com.judebalance.backend.request;
 public class UserUpdateRequest {
     private String email;
     private String password;
+    private String phoneNumber;  // ✅ 이 필드 추가
 
     // 기본 생성자
     public UserUpdateRequest() {
@@ -27,5 +28,13 @@ public class UserUpdateRequest {
 
     public void setPassword(String password) {
         this.password = password;
+    }
+
+    public String getPhoneNumber() {  // ✅ getter 추가
+        return phoneNumber;
+    }
+
+    public void setPhoneNumber(String phoneNumber) {  // ✅ setter 추가
+        this.phoneNumber = phoneNumber;
     }
 }
