@@ -2,6 +2,7 @@ package com.judebalance.backend.controller;
 
 import com.judebalance.backend.domain.Post;
 import com.judebalance.backend.request.PostCreateRequest;
+import com.judebalance.backend.request.PostUpdateRequest;
 import com.judebalance.backend.response.PostResponse;
 import com.judebalance.backend.service.PostService;
 import lombok.RequiredArgsConstructor;
@@ -51,6 +52,36 @@ public class PostController {
         String username = authentication.getName();
         postService.deletePost(id, username);
         return ResponseEntity.ok("게시물이 삭제되었습니다.");
+    }
+
+    // ✅ 게시물 수정
+    public Post updatePost(Long postId, PostUpdateRequest request, String username) {
+        Post post = postRepository.findById(postId)
+            .orElseThrow(() -> new RuntimeException("게시물을 찾을 수 없습니다."));
+
+        if (!post.getUser().getUsername().equals(username)) {
+            throw new RuntimeException("수정 권한이 없습니다.");
+        }
+
+        if (request.getContent() != null) {
+            post.setContent(request.getContent());
+        }
+
+        if (request.getMediaUrl() != null) {
+            post.setMediaUrl(request.getMediaUrl());
+        }
+
+        return postRepository.save(post);
+    }
+
+    // ✅ 게시물 수정
+    @PutMapping("/{id}")
+    public ResponseEntity<Post> updatePost(@PathVariable Long id,
+                                           @RequestBody PostUpdateRequest request,
+                                           Authentication authentication) {
+        String username = authentication.getName();
+        Post updated = postService.updatePost(id, request, username);
+        return ResponseEntity.ok(updated);
     }
 
 }
