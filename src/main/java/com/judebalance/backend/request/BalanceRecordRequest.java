@@ -10,5 +10,6 @@ import lombok.Setter;
 @NoArgsConstructor
 public class BalanceRecordRequest {
     private Integer balance_time; // 초 단위 기록
+    private String date;
 }
 
