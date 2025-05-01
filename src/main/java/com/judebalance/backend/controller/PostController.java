@@ -8,9 +8,9 @@ import com.judebalance.backend.service.PostService;
 import com.judebalance.backend.service.LikeService;
 
 import lombok.RequiredArgsConstructor;
-import main.java.com.judebalance.backend.request.CommentRequest;
-import main.java.com.judebalance.backend.response.CommentResponse;
-import main.java.com.judebalance.backend.service.CommentService;
+import com.judebalance.backend.request.CommentRequest;
+import com.judebalance.backend.response.CommentResponse;
+import com.judebalance.backend.service.CommentService;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;

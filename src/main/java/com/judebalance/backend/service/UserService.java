@@ -5,10 +5,15 @@ import com.judebalance.backend.repository.UserRepository;
 import com.judebalance.backend.request.UserProfileRequest;
 import lombok.RequiredArgsConstructor;
 import com.judebalance.backend.response.UserSearchResponse; 
+import org.springframework.security.crypto.password.PasswordEncoder;
 
+
+import com.judebalance.backend.request.ChangePasswordRequest;
 
 import java.util.List;
 import java.util.stream.Collectors;
+import org.springframework.transaction.annotation.Transactional;
+
 
 import org.springframework.stereotype.Service;
 
@@ -20,6 +25,8 @@ import org.springframework.stereotype.Service;
 public class UserService {
 
     private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
+
 
     public void updateProfile(UserProfileRequest request) {
         // 여기서는 testuser 고정. (나중에 토큰 인증으로 바꿀 것)

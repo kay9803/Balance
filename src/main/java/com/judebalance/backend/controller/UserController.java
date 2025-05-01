@@ -11,6 +11,7 @@ import com.judebalance.backend.response.RegisterResponse;
 import lombok.RequiredArgsConstructor;
 import com.judebalance.backend.response.UserSearchResponse; 
 import com.judebalance.backend.service.UserService;
+import com.judebalance.backend.request.ChangePasswordRequest;
 
 
 import java.util.List;
