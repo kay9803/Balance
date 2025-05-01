@@ -1,23 +1,3 @@
-package com.judebalance.backend.controller;
-
-import com.judebalance.backend.domain.User;
-import com.judebalance.backend.repository.UserRepository;
-import com.judebalance.backend.request.LoginRequest;
-import com.judebalance.backend.request.RegisterRequest;
-import com.judebalance.backend.request.PasswordResetConfirmRequest;
-import com.judebalance.backend.response.LoginResponse;
-import com.judebalance.backend.response.RegisterResponse;
-import com.judebalance.backend.service.AuthService;
-import com.judebalance.backend.service.EmailService;
-import com.judebalance.backend.util.PasswordResetTokenStore;
-import lombok.RequiredArgsConstructor;
-
-import java.util.Map;
-
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.web.bind.annotation.*;
-
 @RestController
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
@@ -30,31 +10,32 @@ public class AuthController {
     private final EmailService emailService;  // ✨ 추가 필요!
 
     /**
-    * 로그인 API
-    */
+     * 로그인 API
+     */
     @PostMapping("/login")
     public ResponseEntity<LoginResponse> login(@RequestBody LoginRequest request) {
-       LoginResponse response = authService.login(request);
-       return ResponseEntity.ok(response);
-   }
-   
-
-    // 회원가입 API
-    
-    @PostMapping("/signup")
-public ResponseEntity<RegisterResponse> signup(@RequestBody RegisterRequest req) {
-    try {
-        RegisterResponse resp = authService.signup(req);
-        return ResponseEntity.ok(resp);
-    } catch (RuntimeException e) {
-        return ResponseEntity.badRequest().body(
-            new RegisterResponse(null, null, e.getMessage())
-        );
+        LoginResponse response = authService.login(request);
+        return ResponseEntity.ok(response);
     }
-}
 
+    /**
+     * 회원가입 API
+     */
+    @PostMapping("/signup")
+    public ResponseEntity<RegisterResponse> signup(@RequestBody RegisterRequest req) {
+        try {
+            RegisterResponse resp = authService.signup(req);
+            return ResponseEntity.ok(resp);
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(
+                new RegisterResponse(null, null, e.getMessage())
+            );
+        }
+    }
 
-    // 비밀번호 재설정 API
+    /**
+     * 비밀번호 재설정 API
+     */
     @PostMapping("/reset-password")
     public ResponseEntity<String> resetPassword(@RequestBody PasswordResetConfirmRequest request) {
         String email = tokenStore.getEmailIfValid(request.getToken());
@@ -73,7 +54,9 @@ public ResponseEntity<RegisterResponse> signup(@RequestBody RegisterRequest req)
         return ResponseEntity.ok("비밀번호가 성공적으로 재설정되었습니다.");
     }
 
-    // 비밀번호 재설정 링크 전송 API
+    /**
+     * 비밀번호 재설정 링크 전송 API
+     */
     @PostMapping("/reset-password-request")
     public ResponseEntity<String> resetPasswordRequest(@RequestBody Map<String, String> request) {
         String email = request.get("email");
@@ -85,5 +68,14 @@ public ResponseEntity<RegisterResponse> signup(@RequestBody RegisterRequest req)
         emailService.sendResetPasswordEmail(email, token);
 
         return ResponseEntity.ok("비밀번호 재설정 링크가 이메일로 전송되었습니다.");
+    }
+
+    /**
+     * 로그아웃 API (형식용)
+     */
+    @PostMapping("/logout")
+    public ResponseEntity<String> logout() {
+        // 프론트에서 토큰 삭제 필요함 (백엔드는 상태 저장 안 함)
+        return ResponseEntity.ok("로그아웃 처리됨 (프론트에서 토큰 삭제 필요)");
     }
 }
