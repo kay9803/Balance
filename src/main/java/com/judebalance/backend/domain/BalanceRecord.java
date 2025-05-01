@@ -1,6 +1,6 @@
 package com.judebalance.backend.domain;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -33,5 +33,5 @@ public class BalanceRecord {
 
     private Integer balance_time;  // 균형 잡은 시간 (초)
 
-    private LocalDate date;  // 기록한 날짜
+    private LocalDateTime date;   // 기록한 날짜
 }

@@ -1,7 +1,7 @@
 // src/main/java/com/judebalance/backend/controller/BalanceRecordController.java
 package com.judebalance.backend.controller;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -39,7 +39,7 @@ public class BalanceRecordController {
         BalanceRecord record = BalanceRecord.builder()
             .user(user)
             .balance_time(request.getBalance_time())
-            .date(LocalDate.now()) // 오늘 날짜로 저장
+            .date(LocalDateTime.now()) // 오늘 날짜로 저장
             .build();
 
         balanceRecordRepository.save(record);
