@@ -29,4 +29,37 @@ public class CommentService {
      * 댓글 작성
      */
     @Transactional
-    public void createComment(Long postId,
+    public void createComment(Long postId, String username, CommentRequest request) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new RuntimeException("게시물을 찾을 수 없습니다."));
+
+        Comment comment = Comment.builder()
+                .user(user)
+                .post(post)
+                .content(request.getContent())
+                .createdAt(LocalDateTime.now())
+                .build();
+
+        commentRepository.save(comment);
+    }
+
+    /**
+     * 댓글 조회
+     */
+    public List<CommentResponse> getComments(Long postId) {
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new RuntimeException("게시물을 찾을 수 없습니다."));
+
+        return commentRepository.findByPostOrderByCreatedAtDesc(post)
+                .stream()
+                .map(comment -> new CommentResponse(
+                        comment.getId(),
+                        comment.getContent(),
+                        comment.getUser().getNickname(),
+                        comment.getCreatedAt()
+                ))
+                .collect(Collectors.toList());
+    }
+}
