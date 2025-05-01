@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDateTime;
 
+import com.judebalance.backend.domain.User;
+
 @Entity
 @Getter
 @Setter
@@ -25,9 +27,11 @@ public class Post {
 
     private String mediaUrl; // 이미지나 영상 링크
 
-    private int likes;
     private int comments;
     private int views;
+
+    @Column(nullable = false)
+    private int likeCount = 0;  // 게시물 좋아요 수
 
     private LocalDateTime createdAt;
 }

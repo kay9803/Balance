@@ -189,4 +189,13 @@ public ResponseEntity<List<UserSearchResponse>> searchUsers(
     List<UserSearchResponse> result = userService.searchByNickname(keyword, currentUsername);
     return ResponseEntity.ok(result);
     }
+
+    @PostMapping("/change-password")
+public ResponseEntity<String> changePassword(@RequestBody ChangePasswordRequest request,
+                                             Authentication authentication) {
+    String username = authentication.getName();
+    userService.changePassword(username, request);
+    return ResponseEntity.ok("비밀번호가 변경되었습니다.");
+}
+
 }

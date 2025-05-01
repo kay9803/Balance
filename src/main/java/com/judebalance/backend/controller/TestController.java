@@ -16,4 +16,6 @@ public class TestController {
     public ResponseEntity<String> secure() {
         return ResponseEntity.ok("✅ Secure endpoint reached!");
     }
+
+    
 }
