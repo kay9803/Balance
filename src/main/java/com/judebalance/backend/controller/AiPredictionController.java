@@ -50,4 +50,6 @@ public class AiPredictionController {
         String predictionResult = predictionService.requestPrediction(user.getId(), dtoList);
         return ResponseEntity.ok(predictionResult);
     }
+
+      
 }
