@@ -2,6 +2,7 @@ package com.judebalance.backend.domain;
 
 import java.time.LocalDateTime;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -31,7 +32,11 @@ public class BalanceRecord {
     @JoinColumn(name = "user_id")
     private User user;  // 해당 기록의 사용자
 
-    private Integer balance_time;  // 균형 잡은 시간 (초)
+   @Column(name = "balance_score")
+    private Integer balanceScore;
 
     private LocalDateTime date;   // 기록한 날짜
+    private Integer duration; 
+
+   
 }

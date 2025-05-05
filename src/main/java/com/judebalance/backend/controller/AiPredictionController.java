@@ -27,29 +27,34 @@ public class AiPredictionController {
     private final UserRepository userRepository;
     private final BalanceRecordRepository balanceRecordRepository;
     private final PredictionService predictionService;
-
     @PostMapping("/predict")
     public ResponseEntity<?> getPrediction(Authentication authentication) {
         String username = authentication.getName();
         User user = userRepository.findByUsername(username)
             .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
-
-        List<BalanceRecord> records = balanceRecordRepository.findByUser(user).stream()
-            .filter(r -> r.getBalance_time() != null) // null 제거
+    
+        List<BalanceRecord> recentRecords = balanceRecordRepository.findByUser(user).stream()
+            .filter(r -> r.getBalanceScore() != null && r.getDuration() != null)
             .sorted(Comparator.comparing(BalanceRecord::getDate).reversed())
             .limit(3)
             .collect(Collectors.toList());
-
-        List<BalanceRecordRequest> dtoList = records.stream().map(r -> {
-            BalanceRecordRequest dto = new BalanceRecordRequest();
-            dto.setDate(r.getDate().toString());
-            dto.setBalance_time(r.getBalance_time());  // null 아닌 값만 옴
-            return dto;
+    
+        List<BalanceRecordRequest> dtoList = recentRecords.stream().map(r -> {
+            int rawScore = r.getBalanceScore();
+            int duration = r.getDuration(); // BalanceRecord 엔티티에 duration 필드 있어야 함
+            double ratio = Math.min(duration / 20.0, 1.0);
+            int adjustedScore = (int) Math.round(rawScore * ratio);
+    
+            return new BalanceRecordRequest(
+                r.getDate().toString(),
+                adjustedScore,
+                duration // 👉 duration 필드도 FastAPI로 같이 넘길 수 있도록 확장
+            );
         }).collect(Collectors.toList());
-
+    
         String predictionResult = predictionService.requestPrediction(user.getId(), dtoList);
         return ResponseEntity.ok(predictionResult);
     }
-
-      
+    
 }
+

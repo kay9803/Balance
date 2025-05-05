@@ -1,20 +1,26 @@
+package com.judebalance.backend.controller;
 
-import org.springframework.web.bind.annotation.*;
+import java.util.Map;
+
 import org.springframework.http.ResponseEntity;
-import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
-import com.judebalance.backend.request.LoginRequest;
-import com.judebalance.backend.response.LoginResponse;
-import com.judebalance.backend.service.AuthService;
+import com.judebalance.backend.domain.User;
 import com.judebalance.backend.repository.UserRepository;
+import com.judebalance.backend.request.LoginRequest;
+import com.judebalance.backend.request.PasswordResetConfirmRequest;
+import com.judebalance.backend.request.RegisterRequest;
+import com.judebalance.backend.response.LoginResponse;
+import com.judebalance.backend.response.RegisterResponse;
+import com.judebalance.backend.service.AuthService;
 import com.judebalance.backend.service.EmailService;
 import com.judebalance.backend.util.PasswordResetTokenStore;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import java.util.Map;
-import com.judebalance.backend.request.RegisterRequest;
-import com.judebalance.backend.response.RegisterResponse;
-import com.judebalance.backend.request.PasswordResetConfirmRequest;
-import com.judebalance.backend.domain.User;
+
+import lombok.RequiredArgsConstructor;
 
 
 
