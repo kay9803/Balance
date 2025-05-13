@@ -38,5 +38,9 @@ public class BalanceRecord {
     private LocalDateTime date;   // 기록한 날짜
     private Integer duration; 
 
-   
+    @Column(name = "foot")
+    private String foot;  // ✅ "left" 또는 "right" 저장
 }
+
+   
+

@@ -14,5 +14,6 @@ public class BalanceRecordRequest {
     private String date;
     private Integer balanceScore;
     private Integer duration;  
+    private String foot; 
 }
 
