@@ -40,6 +40,7 @@ public class BalanceRecord {
 
     @Column(name = "foot")
     private String foot;  // ✅ "left" 또는 "right" 저장
+
 }
 
    
