@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.judebalance.backend.domain.User;
 import com.judebalance.backend.repository.UserRepository;
 import com.judebalance.backend.response.AnalyzeResponse;
+import com.judebalance.backend.response.RecommendInputResponse;
 import com.judebalance.backend.service.AnalyzeService;
 
 import lombok.RequiredArgsConstructor;
@@ -37,6 +38,16 @@ public class AnalyzeController {
         AnalyzeResponse response = analyzeService.getRecentAnalysis(user);
         return ResponseEntity.ok(response);
     }
+    /**
+     * 운동 추천 입력 데이터 조회
+     */
+    @GetMapping("/recommend-input")
+     public ResponseEntity<RecommendInputResponse> getRecommendationInput(Authentication authentication) {
+     String username = authentication.getName();
+     User user = userRepository.findByUsername(username)
+        .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
+     return ResponseEntity.ok(analyzeService.getRecommendInput(user));
+}
     
     
 }

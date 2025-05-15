@@ -2,6 +2,8 @@ package com.judebalance.backend.service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 
@@ -12,6 +14,7 @@ import com.judebalance.backend.domain.WorkoutRecord;
 import com.judebalance.backend.repository.BalanceRecordRepository;
 import com.judebalance.backend.repository.WorkoutRecordRepository;
 import com.judebalance.backend.response.AnalyzeResponse;
+import com.judebalance.backend.response.RecommendInputResponse;
 
 import lombok.RequiredArgsConstructor;
 
@@ -22,21 +25,32 @@ public class AnalyzeService {
     private final WorkoutRecordRepository workoutRecordRepository;
     private final BalanceRecordRepository balanceRecordRepository;
 
+    private static final Map<String, String> exerciseFocusMap = Map.ofEntries(
+        Map.entry("의자 스쿼트", "하체"),
+        Map.entry("발끝 들기", "하체"),
+        Map.entry("뒤꿈치 들기", "하체"),
+        Map.entry("버드독", "코어"),
+        Map.entry("벽 짚고 플랭크", "코어"),
+        Map.entry("사이드 스텝", "전신"),
+        Map.entry("서서 하는 트위스트", "코어"),
+        Map.entry("스탠딩 사이드 레그 리프트", "하체"),
+        Map.entry("스탠딩 힙 익스텐션", "하체"),
+        Map.entry("싱글 레그 스탠딩", "균형"),
+        Map.entry("어깨 스트레칭", "유연성"),
+        Map.entry("제자리 걷기", "전신"),
+        Map.entry("종아리 스트레칭", "유연성"),
+        Map.entry("좌우 스탠딩 크런치", "코어"),
+        Map.entry("허리 회전 스트레칭", "유연성")
+    );
+
     public AnalyzeResponse getRecentAnalysis(User user) {
-        // ✅ 최근 workout 3회
-        List<WorkoutRecord> recentWorkouts = workoutRecordRepository
-            .findTop3ByUserOrderByDateDesc(user);
+        List<WorkoutRecord> recentWorkouts = workoutRecordRepository.findTop3ByUserOrderByDateDesc(user);
+        List<BalanceRecord> recentBalances = balanceRecordRepository.findTop3ByUserIdOrderByIdDesc(user.getId());
 
-        // ✅ 최근 balance 3회 (score용) - createdAt 대신 id 정렬 사용
-        List<BalanceRecord> recentBalances = balanceRecordRepository
-            .findTop3ByUserIdOrderByIdDesc(user.getId());
-
-        // ✅ balance 점수 추출 (최신순 정렬되었음)
         List<Integer> balanceScores = recentBalances.stream()
             .map(BalanceRecord::getBalanceScore)
             .toList();
 
-        // ✅ 분석 레코드 구성
         List<AnalyzeRecord> analyzeRecords = new ArrayList<>();
         for (int i = 0; i < recentWorkouts.size(); i++) {
             WorkoutRecord workout = recentWorkouts.get(i);
@@ -48,11 +62,9 @@ public class AnalyzeService {
             ));
         }
 
-        // ✅ 평균 점수
         double leftScore = balanceRecordRepository.findAverageByUserAndFoot(user.getId(), "left");
         double rightScore = balanceRecordRepository.findAverageByUserAndFoot(user.getId(), "right");
 
-        // ✅ 임시 데이터
         List<String> trainedAreas = List.of("하체", "코어", "어깨");
         int percentile = 82;
 
@@ -63,5 +75,33 @@ public class AnalyzeService {
             trainedAreas,
             percentile
         );
+    }
+
+    public RecommendInputResponse getRecommendInput(User user) {
+        List<WorkoutRecord> workouts = workoutRecordRepository.findTop3ByUserOrderByDateDesc(user);
+        List<BalanceRecord> balances = balanceRecordRepository.findTop3ByUserIdOrderByIdDesc(user.getId());
+
+        List<Integer> recentScores = balances.stream()
+            .map(BalanceRecord::getBalanceScore)
+            .collect(Collectors.toList());
+
+        double avgIntensity = workouts.stream()
+            .mapToDouble(WorkoutRecord::getIntensityScore)
+            .average().orElse(0.7);
+
+        int totalDuration = workouts.stream()
+            .mapToInt(WorkoutRecord::getDuration)
+            .sum();
+
+        Map<String, Long> areaCounts = workouts.stream()
+            .map(r -> exerciseFocusMap.getOrDefault(r.getExerciseName(), "전신"))
+            .collect(Collectors.groupingBy(area -> area, Collectors.counting()));
+
+        String focusArea = areaCounts.entrySet().stream()
+            .max(Map.Entry.comparingByValue())
+            .map(Map.Entry::getKey)
+            .orElse("전신");
+
+        return new RecommendInputResponse(recentScores, avgIntensity, totalDuration, focusArea);
     }
 }

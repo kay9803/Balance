@@ -36,7 +36,7 @@ public class WorkoutRecordController {
     /**
      * 운동 기록 저장 API
      */
-    @PostMapping("/record/save")
+    @PostMapping("/save")
     public ResponseEntity<?> saveWorkout(@RequestBody ExerciseRecordRequest request,
                                          Authentication authentication) {
 
