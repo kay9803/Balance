@@ -1,21 +1,19 @@
 package com.judebalance.backend.service;
 
-import com.judebalance.backend.domain.User;
-import com.judebalance.backend.repository.UserRepository;
-import com.judebalance.backend.request.UserProfileRequest;
-import lombok.RequiredArgsConstructor;
-import com.judebalance.backend.response.UserSearchResponse; 
-import org.springframework.security.crypto.password.PasswordEncoder;
-
-
-import com.judebalance.backend.request.ChangePasswordRequest;
-
 import java.util.List;
 import java.util.stream.Collectors;
+
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.judebalance.backend.domain.User;
+import com.judebalance.backend.repository.UserRepository;
+import com.judebalance.backend.request.ChangePasswordRequest;
+import com.judebalance.backend.request.UserProfileRequest;
+import com.judebalance.backend.response.UserSearchResponse;
 
-import org.springframework.stereotype.Service;
+import lombok.RequiredArgsConstructor;
 
 /**
  * 사용자 관련 서비스
@@ -42,18 +40,21 @@ public class UserService {
         userRepository.save(user);
     }
         // UserService.java
-public List<UserSearchResponse> searchByNickname(String keyword, String currentUsername) {
-    List<User> matched = userRepository.findByNicknameContainingIgnoreCase(keyword);
-    return matched.stream()
-            .filter(user -> !user.getUsername().equals(currentUsername)) // 자기자신 제외
-            .map(user -> new UserSearchResponse(
+        public List<UserSearchResponse> searchByUsername(String keyword, String currentUsername) {
+            return userRepository.findByUsernameContainingIgnoreCase(keyword).stream()
+                .filter(user -> !user.getUsername().equals(currentUsername)) // 자기 자신 제외
+                .map(user -> new UserSearchResponse(
                     user.getId(),
-                    user.getNickname(),
+                    user.getUsername(), // nickname → username
                     user.getAge(),
-                    "https://your-s3-or-default-image-url.com/default.png" // 예시
-            ))
-            .collect(Collectors.toList());
-    }
+                    
+                    "https://your-s3-or-default-image-url.com/default.png",
+                     user.getGender()
+                    
+                ))
+                .collect(Collectors.toList());
+        }
+        
 
      @Transactional
 public void changePassword(String username, ChangePasswordRequest request) {

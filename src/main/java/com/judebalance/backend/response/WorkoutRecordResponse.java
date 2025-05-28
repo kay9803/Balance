@@ -16,5 +16,7 @@ public class WorkoutRecordResponse {
     private String feedback;
     private double intensityScore;
     private String date; // ISO 포맷 문자열
+
+    
 }
 

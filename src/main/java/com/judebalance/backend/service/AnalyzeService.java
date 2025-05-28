@@ -1,5 +1,6 @@
 package com.judebalance.backend.service;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -77,31 +78,58 @@ public class AnalyzeService {
         );
     }
 
-    public RecommendInputResponse getRecommendInput(User user) {
-        List<WorkoutRecord> workouts = workoutRecordRepository.findTop3ByUserOrderByDateDesc(user);
-        List<BalanceRecord> balances = balanceRecordRepository.findTop3ByUserIdOrderByIdDesc(user.getId());
 
+  
+
+    public RecommendInputResponse getRecommendInput(User user) {
+        // 1. 최근 7일 운동 기록
+        LocalDate oneWeekAgo = LocalDate.now().minusDays(7);
+        List<WorkoutRecord> workouts = workoutRecordRepository.findByUserAndDateAfter(user, oneWeekAgo);
+    
+        // 2. 최근 균형 점수 3회
+        List<BalanceRecord> balances = balanceRecordRepository.findTop3ByUserIdOrderByIdDesc(user.getId());
         List<Integer> recentScores = balances.stream()
             .map(BalanceRecord::getBalanceScore)
             .collect(Collectors.toList());
-
+       
+    
+        // 3. 평균 강도 (기록 없을 경우 기본값 0.7)
         double avgIntensity = workouts.stream()
             .mapToDouble(WorkoutRecord::getIntensityScore)
-            .average().orElse(0.7);
-
+            .average()
+            .orElse(0.7);
+    
+        // 4. 총 운동 시간 (기록 없으면 0)
         int totalDuration = workouts.stream()
             .mapToInt(WorkoutRecord::getDuration)
             .sum();
-
+    
+        // 5. 운동 부위 추출 (없으면 '전신')
         Map<String, Long> areaCounts = workouts.stream()
             .map(r -> exerciseFocusMap.getOrDefault(r.getExerciseName(), "전신"))
-            .collect(Collectors.groupingBy(area -> area, Collectors.counting()));
-
+            .collect(Collectors.groupingBy(a -> a, Collectors.counting()));
+    
         String focusArea = areaCounts.entrySet().stream()
             .max(Map.Entry.comparingByValue())
             .map(Map.Entry::getKey)
             .orElse("전신");
-
-        return new RecommendInputResponse(recentScores, avgIntensity, totalDuration, focusArea);
+    
+        // 6. 주간 운동 횟수와 수행한 운동 이름 (없으면 0, [])
+        int weeklyWorkoutCount = workouts.size();
+        List<String> history = workouts.stream()
+            .map(WorkoutRecord::getExerciseName)    
+            .collect(Collectors.toList());
+    
+        return new RecommendInputResponse(
+            recentScores,
+            avgIntensity,
+            totalDuration,
+            focusArea,
+            weeklyWorkoutCount,
+            history
+        );
     }
+    
 }
+
+

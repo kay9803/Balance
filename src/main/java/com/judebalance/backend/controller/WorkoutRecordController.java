@@ -5,7 +5,6 @@ import java.util.List;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -13,10 +12,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.judebalance.backend.domain.User;
+import com.judebalance.backend.domain.WorkoutRecord;
 import com.judebalance.backend.repository.UserRepository;
 import com.judebalance.backend.repository.WorkoutRecordRepository;
-import com.judebalance.backend.request.ExerciseRecordRequest;
+import com.judebalance.backend.request.WorkoutRecordRequest;
 import com.judebalance.backend.response.WorkoutRecordResponse;
+import com.judebalance.backend.service.PostService;
 import com.judebalance.backend.service.WorkoutService;
 
 import lombok.RequiredArgsConstructor;
@@ -30,35 +31,69 @@ import lombok.RequiredArgsConstructor;
 public class WorkoutRecordController {
 
     private final WorkoutRecordRepository workoutRecordRepository;
-    private final UserRepository userRepository;
     private final WorkoutService workoutService;
+    private final PostService postService;
+    private final UserRepository userRepository;
+  
 
-    /**
-     * 운동 기록 저장 API
-     */
     @PostMapping("/save")
-    public ResponseEntity<?> saveWorkout(@RequestBody ExerciseRecordRequest request,
+    public ResponseEntity<?> saveWorkout(@RequestBody WorkoutRecordRequest request,
                                          Authentication authentication) {
-
-        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
-        User entityUser = userRepository.findByUsername(userDetails.getUsername())
+    
+        String username = (String) authentication.getPrincipal();
+        User entityUser = userRepository.findByUsername(username)
             .orElseThrow(() -> new RuntimeException("사용자 없음"));
-
-        workoutService.saveWorkoutRecord(entityUser, request);
+    
+        // 🏋 workout 저장 + 반환
+        WorkoutRecord record = workoutService.saveWorkoutRecord(entityUser, request);
+    
+        // 🌐 공개 범위이면 커뮤니티 포스트 등록
+        if ("public".equalsIgnoreCase(record.getVisibility())) {
+            postService.createPostFromWorkout(entityUser, record);
+        }
+    
         return ResponseEntity.ok().build();
     }
-
+    
     /**
      * 최근 3회 운동 기록 조회 API
      */
-    @GetMapping("/recent3")
-    public ResponseEntity<List<WorkoutRecordResponse>> getRecentThree(Authentication authentication) {
 
-        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
-        User currentUser = userRepository.findByUsername(userDetails.getUsername())
-            .orElseThrow(() -> new RuntimeException("사용자 없음"));
+@GetMapping("/recent3")
+public ResponseEntity<List<WorkoutRecordResponse>> getRecentThree(Authentication authentication) {
+    String username = (String) authentication.getPrincipal();  // ✅ 변경
+    User currentUser = userRepository.findByUsername(username)
+        .orElseThrow(() -> new RuntimeException("사용자 없음"));
 
-        List<WorkoutRecordResponse> responses = workoutService.getRecent3Records(currentUser);
-        return ResponseEntity.ok(responses);
-    }
+    List<WorkoutRecordResponse> responses = workoutService.getRecent3Records(currentUser);
+    return ResponseEntity.ok(responses);
+}
+
+
+/**
+ * 최근 일주일 운동 기록 조회 API
+ */
+@GetMapping("/workouts/recent-week")
+public ResponseEntity<List<WorkoutRecordResponse>> getRecentWeekRecords(Authentication authentication) {
+    String username = (String) authentication.getPrincipal();  // ✅ 변경
+    User currentUser = userRepository.findByUsername(username)
+        .orElseThrow(() -> new RuntimeException("사용자 없음"));
+
+    List<WorkoutRecordResponse> responses = workoutService.getRecentWeekRecordResponses(currentUser);
+    return ResponseEntity.ok(responses);
+}
+
+// WorkoutRecordController.java
+@GetMapping("/all")
+public ResponseEntity<List<WorkoutRecordResponse>> getAllRecords(Authentication authentication) {
+    String username = (String) authentication.getPrincipal();
+    User currentUser = userRepository.findByUsername(username)
+        .orElseThrow(() -> new RuntimeException("사용자 없음"));
+
+    List<WorkoutRecordResponse> responses = workoutService.getAllRecords(currentUser);
+    return ResponseEntity.ok(responses);
+}
+
+ 
+
 }

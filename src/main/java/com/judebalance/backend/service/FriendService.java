@@ -1,111 +1,116 @@
 package com.judebalance.backend.service;
 
-import com.judebalance.backend.domain.Friend;
-import com.judebalance.backend.domain.FriendStatus;
-import com.judebalance.backend.domain.User;
-import com.judebalance.backend.repository.FriendRepository;
-import com.judebalance.backend.repository.UserRepository;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
+import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import org.springframework.stereotype.Service;
+
+import com.judebalance.backend.domain.FriendRequest;
+import com.judebalance.backend.domain.User;
+import com.judebalance.backend.repository.FriendRequestRepository;
+import com.judebalance.backend.repository.UserRepository;
+import com.judebalance.backend.response.FriendResponseDto;
+
+import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
 public class FriendService {
 
+    private final FriendRequestRepository friendRequestRepository;
     private final UserRepository userRepository;
-    private final FriendRepository friendRepository;
 
-    /**
-     * 친구 요청 보내기
-     */
-    @Transactional
-    public void sendFriendRequest(String fromUsername, Long toUserId) {
-        User fromUser = userRepository.findByUsername(fromUsername)
-                .orElseThrow(() -> new RuntimeException("요청자 정보를 찾을 수 없습니다."));
-        User toUser = userRepository.findById(toUserId)
-                .orElseThrow(() -> new RuntimeException("수신자 정보를 찾을 수 없습니다."));
+    // 친구 요청 보내기
+    public String sendFriendRequest(String senderUsername, String receiverUsername) {
+        User sender = getUser(senderUsername);
+        User receiver = getUser(receiverUsername);
 
-        if (fromUser.equals(toUser)) {
-            throw new RuntimeException("자기 자신에게 친구 요청을 보낼 수 없습니다.");
-        }
+        if (sender.equals(receiver)) throw new IllegalArgumentException("자기 자신에게 요청할 수 없습니다.");
 
-        boolean alreadyExists = friendRepository.findByFromUserAndToUser(fromUser, toUser).isPresent();
-        if (alreadyExists) {
-            throw new RuntimeException("이미 친구 요청을 보냈거나 수락된 상태입니다.");
-        }
+        Optional<FriendRequest> existing = friendRequestRepository.findBySenderAndReceiver(sender, receiver);
+        if (existing.isPresent()) throw new IllegalStateException("이미 요청을 보냈습니다.");
 
-        Friend friend = Friend.builder()
-                .fromUser(fromUser)
-                .toUser(toUser)
-                .status(FriendStatus.PENDING)
-                .build();
+        FriendRequest request = new FriendRequest();
+        request.setSender(sender);
+        request.setReceiver(receiver);
+        request.setAccepted(false);
+        request.setDate(LocalDate.now());
 
-        friendRepository.save(friend);
+        friendRequestRepository.save(request);
+        return "요청 완료";
     }
 
-    /**
-     * 친구 요청 수락
-     */
-    @Transactional
-    public void acceptFriendRequest(String toUsername, Long fromUserId) {
-        User toUser = userRepository.findByUsername(toUsername)
-                .orElseThrow(() -> new RuntimeException("수신자 정보를 찾을 수 없습니다."));
-        User fromUser = userRepository.findById(fromUserId)
-                .orElseThrow(() -> new RuntimeException("요청자 정보를 찾을 수 없습니다."));
+        // 친구 요청 목록 조회
 
-        Friend friend = friendRepository.findByFromUserAndToUser(fromUser, toUser)
-                .orElseThrow(() -> new RuntimeException("친구 요청이 존재하지 않습니다."));
-
-        friend.setStatus(FriendStatus.ACCEPTED);
-        friendRepository.save(friend);
+    public List<FriendResponseDto> getPendingRequests(String username) {
+        User user = getUser(username);
+        return friendRequestRepository.findByReceiverAndAcceptedFalse(user).stream()
+                .map(FriendRequest::getSender)
+                .map(FriendResponseDto::from)
+                .toList();
     }
+    
 
-    /**
-     * 친구 목록 조회
-     */
-    @Transactional(readOnly = true)
-    public List<User> getFriends(String username) {
-        User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
+        // 친구 목록 조회
 
-        List<Friend> friends = friendRepository.findByStatusAndFromUserOrToUser(FriendStatus.ACCEPTED, user, user);
+ public List<FriendResponseDto> getFriends(String username) {
+    User user = getUser(username);
+    List<FriendRequest> sent = friendRequestRepository.findBySenderAndAcceptedTrue(user);
+    List<FriendRequest> received = friendRequestRepository.findByReceiverAndAcceptedTrue(user);
 
-        return friends.stream()
-                .map(f -> f.getFromUser().equals(user) ? f.getToUser() : f.getFromUser())
-                .distinct()
-                .collect(Collectors.toList());
-    }
-    @Transactional
-public void cancelFriendRequest(String fromUsername, Long toUserId) {
-    User fromUser = userRepository.findByUsername(fromUsername)
-            .orElseThrow(() -> new RuntimeException("요청자를 찾을 수 없습니다."));
-    User toUser = userRepository.findById(toUserId)
-            .orElseThrow(() -> new RuntimeException("대상 사용자를 찾을 수 없습니다."));
-
-    Friend friend = friendRepository.findByFromUserAndToUser(fromUser, toUser)
-            .orElseThrow(() -> new RuntimeException("친구 요청이 존재하지 않습니다."));
-
-    if (friend.getStatus() != FriendStatus.PENDING) {
-        throw new RuntimeException("이미 수락된 친구 요청은 취소할 수 없습니다.");
-    }
-
-    friendRepository.delete(friend);
-}
-
-@Transactional(readOnly = true)
-public List<User> getPendingFriendRequests(String toUsername) {
-    User toUser = userRepository.findByUsername(toUsername)
-            .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
-
-    return friendRepository.findByToUserAndStatus(toUser, FriendStatus.PENDING)
-            .stream()
-            .map(Friend::getFromUser)
-            .collect(Collectors.toList());
+    return Stream.concat(
+        sent.stream().map(FriendRequest::getReceiver),
+        received.stream().map(FriendRequest::getSender)
+    )
+    .map(FriendResponseDto::from)
+    .toList();
 }
 
 
+    // 수락
+    public void acceptRequest(String username, Long friendId) {
+        User receiver = getUser(username);
+        User sender = getUserById(friendId);
+
+        FriendRequest request = friendRequestRepository
+                .findBySenderAndReceiver(sender, receiver)
+                .orElseThrow(() -> new IllegalArgumentException("요청을 찾을 수 없습니다."));
+
+        request.setAccepted(true);
+        friendRequestRepository.save(request);
+    }
+
+    // 거절
+    public void rejectRequest(String username, Long friendId) {
+        User receiver = getUser(username);
+        User sender = getUserById(friendId);
+
+        FriendRequest request = friendRequestRepository
+                .findBySenderAndReceiver(sender, receiver)
+                .orElseThrow(() -> new IllegalArgumentException("요청을 찾을 수 없습니다."));
+
+        friendRequestRepository.delete(request);
+    }
+
+    // 친구 삭제 (양방향 모두 삭제는 선택사항)
+    public void removeFriend(String username, Long friendId) {
+        User user = getUser(username);
+        User target = getUserById(friendId);
+
+        friendRequestRepository.findBySenderAndReceiver(user, target).ifPresent(friendRequestRepository::delete);
+        friendRequestRepository.findBySenderAndReceiver(target, user).ifPresent(friendRequestRepository::delete);
+    }
+
+    private User getUser(String username) {
+        return userRepository.findByUsername(username)
+                .orElseThrow(() -> new IllegalArgumentException("유저를 찾을 수 없습니다: " + username));
+    }
+
+    private User getUserById(Long id) {
+        return userRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("유저 ID 오류: " + id));
+    }
 }

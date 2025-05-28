@@ -1,15 +1,16 @@
 package com.judebalance.backend.response;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-
 import java.time.LocalDateTime;
 
-@Getter
+import lombok.AllArgsConstructor;
+import lombok.Data;
+
+@Data
 @AllArgsConstructor
 public class PostResponse {
-    private Long id;
+    private String username;
+    private String exerciseName;
     private String content;
-    private String mediaUrl;
     private LocalDateTime createdAt;
+    private Long id;
 }

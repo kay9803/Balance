@@ -1,25 +1,31 @@
 // src/main/java/com/judebalance/backend/controller/UserController.java
 package com.judebalance.backend.controller;
 
-import com.judebalance.backend.domain.User;
-import com.judebalance.backend.repository.UserRepository;
-import com.judebalance.backend.response.UserProfileResponse;
-import com.judebalance.backend.request.UserUpdateRequest;
-import com.judebalance.backend.util.AesEncryptUtil;
-import com.judebalance.backend.request.RegisterRequest;
-import com.judebalance.backend.response.RegisterResponse;
-import lombok.RequiredArgsConstructor;
-import com.judebalance.backend.response.UserSearchResponse; 
-import com.judebalance.backend.service.UserService;
-import com.judebalance.backend.request.ChangePasswordRequest;
-
-
 import java.util.List;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.judebalance.backend.domain.User;
+import com.judebalance.backend.repository.UserRepository;
+import com.judebalance.backend.request.ChangePasswordRequest;
+import com.judebalance.backend.request.RegisterRequest;
+import com.judebalance.backend.request.UserUpdateRequest;
+import com.judebalance.backend.response.RegisterResponse;
+import com.judebalance.backend.response.UserProfileResponse;
+import com.judebalance.backend.response.UserSearchResponse; 
+import com.judebalance.backend.service.UserService;
+import com.judebalance.backend.util.AesEncryptUtil;
+
+import lombok.RequiredArgsConstructor;
 
 /**
  * 로그인된 사용자의 프로필 조회 및 수정 컨트롤러
@@ -140,30 +146,13 @@ public ResponseEntity<?> completeUserProfile(
     User user = userRepository.findByUsername(username)
         .orElseThrow(() -> new RuntimeException("로그인된 사용자를 찾을 수 없습니다."));
 
-    // 이메일 및 전화번호 암호화
-    String encryptedEmail = aesEncryptUtil.encrypt(req.getEmail());
-    String encryptedPhone = aesEncryptUtil.encrypt(req.getPhoneNumber());
+ 
 
-    // 이메일 중복 확인
-    boolean emailExists = userRepository.findByEmail(encryptedEmail).isPresent();
-    if (emailExists && !encryptedEmail.equals(user.getEmail())) {
-        return ResponseEntity.badRequest().body("이미 사용 중인 이메일입니다.");
-    }
-
-    // 전화번호 중복 확인
-    boolean phoneExists = userRepository.findAll().stream()
-        .anyMatch(u -> u.getPhoneNumber() != null &&
-                       u.getPhoneNumber().equals(encryptedPhone) &&
-                       !u.getUsername().equals(username));
-    if (phoneExists) {
-        return ResponseEntity.badRequest().body("이미 사용 중인 전화번호입니다.");
-    }
-
+   
     // 정보 저장
-    user.setName(req.getName());
+    
     user.setNickname(req.getNickname());
-    user.setEmail(encryptedEmail);
-    user.setPhoneNumber(encryptedPhone);
+   
     user.setGender(req.getGender());
     user.setAge(req.getAge());
     user.setHeight(req.getHeight());
@@ -181,15 +170,16 @@ public ResponseEntity<?> completeUserProfile(
     }
 
     // UserController.java
-@GetMapping("/search")
-public ResponseEntity<List<UserSearchResponse>> searchUsers(
-        @RequestParam String keyword,
-        Authentication authentication) {
-
-    String currentUsername = authentication.getName(); // 현재 로그인한 사용자 제외
-    List<UserSearchResponse> result = userService.searchByNickname(keyword, currentUsername);
-    return ResponseEntity.ok(result);
+    @GetMapping("/search")
+    public ResponseEntity<List<UserSearchResponse>> searchUsers(
+            @RequestParam(name = "keyword") String keyword,
+            Authentication authentication) {
+    
+        String currentUsername = authentication.getName(); // 현재 로그인한 사용자 제외
+        List<UserSearchResponse> result = userService.searchByUsername(keyword, currentUsername);
+        return ResponseEntity.ok(result);
     }
+    
 
     @PostMapping("/change-password")
 public ResponseEntity<String> changePassword(@RequestBody ChangePasswordRequest request,

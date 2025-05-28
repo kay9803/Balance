@@ -1,8 +1,6 @@
 // src/main/java/com/judebalance/backend/config/SecurityConfig.java
 package com.judebalance.backend.config;
 
-import com.judebalance.backend.util.JwtUtil;
-import com.judebalance.backend.config.JwtAuthenticationFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.Customizer;
@@ -13,6 +11,8 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+
+import com.judebalance.backend.util.JwtUtil;
 
 @Configuration
 @EnableWebSecurity
@@ -37,8 +37,9 @@ public class SecurityConfig {
             .csrf(csrf -> csrf.disable())
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
+                
+              
                 .requestMatchers("/api/auth/**").permitAll()
-                .requestMatchers("/api/user/signup").permitAll() // ✅ 회원가입은 인증 없이 허용
                 .requestMatchers("/api/user/me").authenticated()
                 .requestMatchers("/api/user/**").authenticated()
                 .anyRequest().permitAll()

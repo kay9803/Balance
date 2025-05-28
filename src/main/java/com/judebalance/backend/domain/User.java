@@ -1,7 +1,16 @@
 package com.judebalance.backend.domain;
 
-import jakarta.persistence.*;
-import lombok.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
 @Getter
@@ -34,8 +43,7 @@ public class User {
     @Column(nullable = false)
     private String nickname;  // 닉네임
 
-    @Column(nullable = false)
-    private String name;       // 실제 이름
+    
 
     @Column(nullable = false)
     private Integer age;       // 나이

@@ -21,5 +21,8 @@ public interface BalanceRecordRepository extends JpaRepository<BalanceRecord, Lo
 
     List<BalanceRecord> findTop3ByUserIdOrderByIdDesc(Long userId);
 
+    List<BalanceRecord> findByUserIdOrderByDateDesc(Long userId);
+
+
 }
 

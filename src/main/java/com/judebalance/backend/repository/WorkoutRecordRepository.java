@@ -1,6 +1,7 @@
 // src/main/java/com/judebalance/backend/repository/WorkoutRecordRepository.java
 package com.judebalance.backend.repository;
 
+import java.time.LocalDate;
 import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -20,5 +21,10 @@ public interface WorkoutRecordRepository extends JpaRepository<WorkoutRecord, Lo
     List<WorkoutRecord> findByUserOrderByDateDesc(User user);
 
     List<WorkoutRecord> findTop3ByUserOrderByDateDesc(User user);
+
+    List<WorkoutRecord> findByUserAndDateAfter(User user, LocalDate date);
+
+   
+
 
 }

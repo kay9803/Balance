@@ -1,18 +1,22 @@
 package com.judebalance.backend.service;
 
+import java.util.List;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
+
 import com.judebalance.backend.domain.User;
 import com.judebalance.backend.repository.UserRepository;
 import com.judebalance.backend.request.LoginRequest;
-import com.judebalance.backend.response.LoginResponse;
 import com.judebalance.backend.request.RegisterRequest;
+import com.judebalance.backend.response.LoginResponse;
 import com.judebalance.backend.response.RegisterResponse;
 import com.judebalance.backend.util.AesEncryptUtil;
 import com.judebalance.backend.util.JwtUtil;
-import lombok.RequiredArgsConstructor;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Service;
 
-import java.util.List;
+import lombok.RequiredArgsConstructor;
 
 /**
  * 인증(Auth) 관련 비즈니스 로직 처리 서비스
@@ -34,10 +38,9 @@ public class AuthService {
         User user = userRepository.findByUsername(request.getUsername())
             .orElseThrow(() -> new RuntimeException("존재하지 않는 사용자입니다."));
 
-        // 2) 비밀번호 검증
-        if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
-            throw new RuntimeException("비밀번호가 일치하지 않습니다.");
-        }
+if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
+    throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "비밀번호가 일치하지 않습니다.");
+}
 
         // 3) JWT 토큰 발급
         String token = jwtUtil.generateToken(
@@ -77,7 +80,7 @@ public class AuthService {
             .email(encryptedEmail)
             .phoneNumber(encryptedPhone)
             .nickname(req.getNickname())
-            .name(req.getName())
+           
             .gender(req.getGender())
             .age(req.getAge())
             .height(req.getHeight())

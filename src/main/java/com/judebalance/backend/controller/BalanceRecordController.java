@@ -2,6 +2,7 @@
 package com.judebalance.backend.controller;
 
 import java.util.Collections;
+import java.util.List;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -17,6 +18,7 @@ import com.judebalance.backend.domain.User;
 import com.judebalance.backend.repository.BalanceRecordRepository;
 import com.judebalance.backend.repository.UserRepository;
 import com.judebalance.backend.request.BalanceRecordRequest;
+import com.judebalance.backend.response.BalanceRecordResponse;
 import com.judebalance.backend.response.CommonResponse;
 import com.judebalance.backend.service.BalanceService;
 
@@ -62,4 +64,17 @@ public class BalanceRecordController {
 
         return ResponseEntity.ok(Collections.singletonMap("balanceScore", latestRecord.getBalanceScore()));
     }
+
+@GetMapping("/records")
+public ResponseEntity<List<BalanceRecordResponse>> getAllBalanceRecords(Authentication authentication) {
+    String username = authentication.getName();
+    User user = userRepository.findByUsername(username)
+        .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
+
+    List<BalanceRecordResponse> result = balanceService.getAllBalanceRecords(user);
+
+    return ResponseEntity.ok(result);
+}
+
+
 }

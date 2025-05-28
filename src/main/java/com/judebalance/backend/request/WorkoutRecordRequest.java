@@ -13,7 +13,7 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @Data
-public class ExerciseRecordRequest {
+public class WorkoutRecordRequest {
     private String exerciseName;
     private int totalTime;
     private int completedSets;

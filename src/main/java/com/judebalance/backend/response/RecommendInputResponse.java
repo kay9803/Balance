@@ -10,8 +10,12 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class RecommendInputResponse {
-    private List<Integer> recent_scores;
-    private double recent_intensity_avg;
-    private int recent_duration_sum;
-    private String focus_area;
+    private List<Integer> recentScores;
+    private double avgIntensity;
+    private int totalDuration;
+    private String focusArea;
+
+    private int weeklyWorkoutCount;
+    private List<String> history;
+ 
 }
